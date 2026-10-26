@@ -1,0 +1,18 @@
+[Unit]
+Description=LeTV TV daemon (web console + Home Assistant bridge)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=Your Name
+Group=Your Name
+WorkingDirectory=/path/to/letv_daemon
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/path/to/letv_daemon/.venv/bin/python -m letv_daemon --log-file /path/to/letv_daemon.log
+Restart=always
+RestartSec=5
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

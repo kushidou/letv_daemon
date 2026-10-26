@@ -1,0 +1,1101 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>乐视电视控制台</title>
+<style>
+  :root {
+    --bg: #0e1116;
+    --card: #171c24;
+    --card-2: #1f2631;
+    --line: #2c3542;
+    --text: #e6edf6;
+    --muted: #8b98aa;
+    --accent: #4f8cff;
+    --ok: #35c48b;
+    --bad: #ff6b6b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 20px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC",
+      "Microsoft YaHei", sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1040px;
+    margin: 0 auto 18px;
+  }
+  h1 { font-size: 20px; margin: 0; }
+  h2 { font-size: 15px; margin: 0 0 14px; color: var(--muted); font-weight: 600; }
+  .sub { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+  .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pill {
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: var(--card-2);
+    border: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .pill.ok { color: var(--ok); border-color: rgba(53, 196, 139, .4); }
+  .pill.bad { color: var(--bad); border-color: rgba(255, 107, 107, .4); }
+
+  main {
+    max-width: 1040px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      "status status status"
+      "remote source power"
+      "remote launch watchdog"
+      "apps   apps   apps"
+      "apk    wallpaper desktop-config";
+    gap: 16px;
+    align-items: stretch;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px;
+  }
+  .card.status { grid-area: status; }
+  .card.remote { grid-area: remote; }
+  .card.source { grid-area: source; }
+  .card.power { grid-area: power; }
+  .card.launch { grid-area: launch; }
+  .card.watchdog { grid-area: watchdog; }
+  .card.app-manager { grid-area: apps; }
+  .card.upload.apk { grid-area: apk; }
+  .card.upload.wallpaper { grid-area: wallpaper; }
+  .card.upload.desktop-config { grid-area: desktop-config; }
+  .label { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+  .app { font-size: 22px; font-weight: 600; }
+  .component { color: var(--muted); font-size: 12px; margin-top: 6px; word-break: break-all; }
+
+  .key {
+    background: var(--card-2);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 13px 10px;
+    font-size: 15px;
+    cursor: pointer;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background .08s ease, transform .08s ease;
+  }
+  .key:hover { background: #263040; }
+  .key:active { background: #33415a; transform: scale(.97); }
+  .key:disabled { opacity: .4; cursor: not-allowed; }
+  .key.danger { color: #ffd2d2; border-color: rgba(255, 107, 107, .45); }
+  .key.danger:hover { background: #3a2630; }
+
+  .toprow, .row { display: flex; gap: 8px; }
+  .toprow > .key, .row > .key { flex: 1; }
+  .toprow { margin-bottom: 12px; }
+  .row { margin-top: 12px; }
+
+  .dpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 8px;
+    width: min(300px, 100%);
+    aspect-ratio: 1 / 1;
+    margin: 0 auto;
+  }
+  .dpad .up { grid-area: 1 / 2; }
+  .dpad .left { grid-area: 2 / 1; }
+  .dpad .center { grid-area: 2 / 2; font-weight: 700; }
+  .dpad .right { grid-area: 2 / 3; }
+  .dpad .down { grid-area: 3 / 2; }
+
+  .numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .apps { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+  .apps .key { padding: 16px 8px; }
+  .app-manager-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .app-manager-head .key { flex: none; padding: 9px 14px; font-size: 14px; }
+  .app-list { display: flex; flex-direction: column; gap: 6px; max-height: 440px; overflow: auto; }
+  .app-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--card-2);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .app-item .info { flex: 1; min-width: 0; }
+  .app-item .name { font-size: 14px; overflow-wrap: anywhere; }
+  .app-item .pkg {
+    margin-top: 3px;
+    color: var(--muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas,
+      "Liberation Mono", monospace;
+    font-size: 12px;
+    word-break: break-all;
+  }
+  .app-item .key { flex: none; padding: 8px 12px; font-size: 13px; }
+  .app-empty { color: var(--muted); font-size: 13px; line-height: 1.6; }
+  .source-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+    gap: 8px;
+  }
+  .watchdog .pill { display: inline-block; margin-bottom: 10px; }
+  .hint { color: var(--muted); font-size: 12px; line-height: 1.6; margin: 12px 0 0; }
+
+  /* 窄屏改为单列，顺序与桌面排版一致。 */
+  @media (max-width: 940px) {
+    main {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas:
+        "status"
+        "remote"
+        "source"
+        "power"
+        "launch"
+        "watchdog"
+        "apps"
+        "apk"
+        "wallpaper"
+        "desktop-config";
+    }
+  }
+
+  .upload .file {
+    width: 100%;
+    padding: 12px;
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    background: var(--card-2);
+    color: var(--muted);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .upload .file::file-selector-button {
+    margin-right: 10px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #263040;
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .upload progress {
+    width: 100%;
+    height: 8px;
+    margin-top: 12px;
+    accent-color: var(--accent);
+  }
+  .upload .result {
+    min-height: 20px;
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .upload .result.ok { color: var(--ok); }
+  .upload .result.bad { color: var(--bad); }
+
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(4, 7, 11, .72);
+  }
+  .modal[hidden] { display: none; }
+  .modal-box {
+    width: min(860px, 100%);
+    max-height: 86vh;
+    display: flex;
+    flex-direction: column;
+    padding: 18px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+  }
+  .modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .modal-head h2 { margin: 0; }
+  .modal-close {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    flex: none;
+    font-size: 20px;
+    line-height: 1;
+  }
+  .modal pre {
+    flex: 1;
+    min-height: 0;
+    margin: 0;
+    padding: 14px;
+    overflow: auto;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas,
+      "Liberation Mono", monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    white-space: pre;
+    tab-size: 2;
+  }
+  .modal-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .modal-actions .key { flex: 1; }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    z-index: 50;
+    transform: translate(-50%, 20px);
+    background: #2a3342;
+    border: 1px solid var(--line);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease;
+    max-width: calc(100vw - 40px);
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast.error { border-color: rgba(255, 107, 107, .6); color: #ffd2d2; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>乐视电视控制台</h1>
+    <p class="sub" id="deviceInfo">—</p>
+  </div>
+  <div class="pills">
+    <span class="pill" id="onlinePill">连接中…</span>
+    <span class="pill" id="screenPill">屏幕 —</span>
+  </div>
+</header>
+
+<main>
+  <section class="card status">
+    <div class="label">当前应用</div>
+    <div class="app" id="currentApp">—</div>
+    <div class="component" id="currentComponent"></div>
+  </section>
+
+  <section class="card remote">
+    <h2>遥控器</h2>
+    <div class="toprow">
+      <button class="key" data-action="home">主页</button>
+      <button class="key" data-action="menu">菜单</button>
+      <button class="key" data-action="return">返回</button>
+    </div>
+
+    <div class="dpad">
+      <button class="key up" data-action="up" data-repeat="true" aria-label="上">▲</button>
+      <button class="key left" data-action="left" data-repeat="true" aria-label="左">◀</button>
+      <button class="key center" data-action="ok" aria-label="确定">OK</button>
+      <button class="key right" data-action="right" data-repeat="true" aria-label="右">▶</button>
+      <button class="key down" data-action="down" data-repeat="true" aria-label="下">▼</button>
+    </div>
+
+    <div class="row">
+      <button class="key" data-action="volume_up" data-repeat="true">音量+</button>
+      <button class="key" data-action="mute">静音</button>
+      <button class="key" data-action="volume_down" data-repeat="true">音量−</button>
+    </div>
+    <div class="row">
+      <button class="key" data-action="channel_up" data-repeat="true">频道+</button>
+      <button class="key" data-action="channel_down" data-repeat="true">频道−</button>
+    </div>
+
+    <div class="numpad" id="numpad"></div>
+    <p class="hint">方向键、音量键支持长按连续发送；每个按键都是独立的请求，服务端不会自动重复。</p>
+  </section>
+
+  <section class="card source">
+    <h2>信号源</h2>
+    <div class="source-grid">
+      <button class="key" type="button" data-udp-action="switch_source">信号源</button>
+      <button class="key" type="button" data-udp-action="switch_hdmi_0">HDMI 1</button>
+      <button class="key" type="button" data-udp-action="switch_hdmi_1">HDMI 2</button>
+      <button class="key" type="button" data-udp-action="switch_hdmi_2">HDMI 3</button>
+      <button class="key" type="button" data-udp-action="switch_hdmi_3">HDMI 4</button>
+      <button class="key" type="button" data-udp-action="switch_tv">TV</button>
+      <button class="key" type="button" data-udp-action="switch_vga">VGA</button>
+      <button class="key" type="button" data-udp-action="switch_cvbs">AV</button>
+      <button class="key" type="button" data-udp-action="switch_station">切换台</button>
+      <button class="key" type="button" data-udp-action="switch_network_model">网络模式</button>
+      <button class="key" type="button" data-udp-action="switch_bit_stream">码流</button>
+      <button class="key" type="button" data-udp-action="switch_play_mode">播放模式</button>
+    </div>
+    <p class="hint">这些动作 ADB 没有 keyCode，只能走 UDP 9900。电视待机或断网时不可用；UDP 无应答，发送后以画面为准。</p>
+  </section>
+
+  <section class="card power">
+    <h2>电源</h2>
+    <div class="row">
+      <button class="key danger" type="button" id="powerButton">电源 / 待机</button>
+      <button class="key danger" type="button" data-udp-action="power_off" data-confirm="确定要关机吗？待机后 ADB 与 UDP 都会断开，只能通过遥控器或外接硬件唤醒。">关机</button>
+    </div>
+    <p class="hint">电源键走 ADB（keyCode 26，待机/唤醒切换）；关机键走 UDP 9900。两者执行前都会二次确认，待机后电视断网，Web 无法再控制。</p>
+  </section>
+
+  <section class="card launch">
+    <h2>快捷启动</h2>
+    <div class="apps" id="apps">加载中…</div>
+    <p class="hint">列表来自 config.json 的 apps 字段。</p>
+  </section>
+
+  <section class="card watchdog">
+    <h2>桌面守护</h2>
+    <span class="pill" id="watchdogPill">—</span>
+    <div class="component" id="watchdogInfo"></div>
+    <div class="row">
+      <button class="key" type="button" id="watchdogToggle">启动</button>
+      <button class="key" type="button" id="watchdogPause">暂停</button>
+    </div>
+    <p class="hint">按主页后自动回到自建桌面；暂停后恢复原桌面。config.json 中的 PAUSE 文件与暂停按钮等效。</p>
+  </section>
+
+  <section class="card app-manager">
+    <h2>应用管理</h2>
+    <div class="app-manager-head">
+      <span class="component" id="userAppsMeta">加载中…</span>
+      <button class="key" type="button" id="userAppsRefresh">刷新清单</button>
+    </div>
+    <div class="app-list" id="userApps">加载中…</div>
+    <p class="hint">清单来自电视上的第三方应用（pm list packages -3），连接成功时自动获取一次，之后不会定时刷新；只有点击「刷新清单」才会重新读取设备。卸载会删除应用及其数据，需二次确认；桌面守护的关键应用不可卸载。</p>
+  </section>
+
+  <section class="card upload apk">
+    <h2>安装 APK</h2>
+    <input class="file" type="file" id="apkFile" accept=".apk,application/vnd.android.package-archive">
+    <div class="row">
+      <button class="key" type="button" id="apkUpload">上传并安装</button>
+    </div>
+    <progress id="apkProgress" max="100" value="0"></progress>
+    <div class="result" id="apkResult">选择 APK 后上传，安装结果会显示在这里。</div>
+    <p class="hint">通过 adb install -r 安装，会覆盖同包名的旧版本；安装完成后不会自动启动。</p>
+  </section>
+
+  <section class="card upload wallpaper">
+    <h2>上传壁纸</h2>
+    <input class="file" type="file" id="wallpaperFile" accept="image/png,image/jpeg,image/webp,image/gif,image/bmp">
+    <div class="row">
+      <button class="key" type="button" id="wallpaperUpload">上传壁纸</button>
+    </div>
+    <progress id="wallpaperProgress" max="100" value="0"></progress>
+    <div class="result" id="wallpaperResult">支持 PNG / JPEG / WebP / GIF / BMP。</div>
+    <p class="hint">图片会传到自建桌面的 wallpapers 目录，并以上传时间命名。</p>
+  </section>
+
+  <section class="card upload desktop-config">
+    <h2>桌面配置</h2>
+    <div class="component" id="configPath">/sdcard/Android/data/com.peter.tvhome.letv/files/config.json</div>
+    <div class="row">
+      <button class="key" type="button" id="configView">查看当前配置</button>
+    </div>
+    <input class="file" type="file" id="configFile" accept=".json,application/json">
+    <div class="row">
+      <button class="key" type="button" id="configUploadButton">上传并替换配置</button>
+    </div>
+    <progress id="configProgress" max="100" value="0"></progress>
+    <div class="result" id="configResult">上传前会校验 JSON 语法；只校验格式，不校验桌面 App 的字段含义。</div>
+    <p class="hint">内容先写入同目录临时文件，再原子替换 config.json；替换后桌面 App 可能需要重新加载。</p>
+  </section>
+</main>
+
+<div class="modal" id="configModal" hidden>
+  <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="configModalTitle">
+    <div class="modal-head">
+      <h2 id="configModalTitle">桌面配置</h2>
+      <button class="key modal-close" type="button" id="configClose" aria-label="关闭">×</button>
+    </div>
+    <div class="component" id="configMeta"></div>
+    <pre id="configContent" tabindex="0">加载中…</pre>
+    <div class="modal-actions">
+      <button class="key" type="button" id="configCopy" disabled>复制</button>
+      <button class="key" type="button" id="configClose2">关闭</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var TOKEN_KEY = "letv_token";
+  var REPEAT_INTERVAL = 180;
+  var token = window.localStorage.getItem(TOKEN_KEY) || "";
+  var lastError = "";
+  var toastTimer = null;
+  var watchdogState = null;
+  var configText = "";
+
+  function byId(id) { return document.getElementById(id); }
+
+  function toast(message, isError) {
+    var box = byId("toast");
+    box.textContent = message;
+    box.classList.toggle("error", !!isError);
+    box.classList.add("show");
+    if (toastTimer) { clearTimeout(toastTimer); }
+    toastTimer = setTimeout(function () { box.classList.remove("show"); }, 3200);
+  }
+
+  function api(path, options) {
+    options = options || {};
+    var headers = {};
+    if (options.body !== undefined) { headers["Content-Type"] = "application/json"; }
+    if (token) { headers["X-Token"] = token; }
+
+    return fetch(path, {
+      method: options.method || "GET",
+      headers: headers,
+      body: options.body === undefined ? undefined : JSON.stringify(options.body)
+    }).then(function (response) {
+      if (response.status === 401) {
+        var entered = window.prompt("需要访问令牌（config.json → web.token）：");
+        if (entered) {
+          token = entered;
+          window.localStorage.setItem(TOKEN_KEY, entered);
+          return api(path, options);
+        }
+      }
+      return response.json().catch(function () { return {}; }).then(function (data) {
+        if (!response.ok) {
+          throw new Error(data.error || ("HTTP " + response.status));
+        }
+        return data;
+      });
+    });
+  }
+
+  function sendKey(action, successMessage) {
+    return api("/api/key", { method: "POST", body: { action: action } })
+      .then(function () {
+        if (successMessage) { toast(successMessage); }
+      })
+      .catch(function (error) { toast(error.message, true); });
+  }
+
+  function bindPress(button) {
+    var timer = null;
+
+    function stop() {
+      if (timer) { clearInterval(timer); timer = null; }
+    }
+
+    function start(event) {
+      event.preventDefault();
+      if (button.disabled) { return; }
+      var action = button.getAttribute("data-action");
+      sendKey(action);
+      if (button.getAttribute("data-repeat") === "true") {
+        stop();
+        timer = setInterval(function () { sendKey(action); }, REPEAT_INTERVAL);
+      }
+    }
+
+    button.addEventListener("pointerdown", start);
+    button.addEventListener("pointerup", stop);
+    button.addEventListener("pointerleave", stop);
+    button.addEventListener("pointercancel", stop);
+    button.addEventListener("contextmenu", function (event) { event.preventDefault(); });
+    button.addEventListener("keydown", function (event) {
+      if ((event.key === "Enter" || event.key === " ") && !event.repeat) {
+        start(event);
+      }
+    });
+    button.addEventListener("keyup", stop);
+  }
+
+  function buildNumpad() {
+    var box = byId("numpad");
+    for (var n = 0; n <= 9; n++) {
+      var button = document.createElement("button");
+      button.className = "key";
+      button.type = "button";
+      button.textContent = String(n);
+      button.setAttribute("data-action", "num_" + n);
+      box.appendChild(button);
+      bindPress(button);
+    }
+  }
+
+  function launch(pkg, activity) {
+    var body = { package: pkg };
+    if (activity) { body.activity = activity; }
+    api("/api/launch", { method: "POST", body: body })
+      .then(function () { toast("已启动 " + pkg); })
+      .catch(function (error) { toast(error.message, true); });
+  }
+
+  function formatSize(bytes) {
+    if (typeof bytes !== "number") { return "—"; }
+    if (bytes < 1024) { return bytes + " B"; }
+    if (bytes < 1024 * 1024) { return (bytes / 1024).toFixed(1) + " KB"; }
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  }
+
+  function uploadFile(path, file, progress, onUploaded) {
+    return new Promise(function (resolve, reject) {
+      function attempt(canPrompt) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", path);
+        xhr.setRequestHeader(
+          "Content-Type", file.type || "application/octet-stream"
+        );
+        xhr.setRequestHeader("X-Filename", encodeURIComponent(file.name));
+        if (token) { xhr.setRequestHeader("X-Token", token); }
+
+        xhr.upload.onprogress = function (event) {
+          if (event.lengthComputable) {
+            progress.max = event.total;
+            progress.value = event.loaded;
+          }
+        };
+        xhr.upload.onload = function () {
+          if (onUploaded) { onUploaded(); }
+          progress.value = progress.max;
+        };
+        xhr.onload = function () {
+          var data = {};
+          try { data = JSON.parse(xhr.responseText || "{}"); } catch (error) {}
+          if (xhr.status === 401 && canPrompt) {
+            var entered = window.prompt(
+              "需要访问令牌（config.json → web.token）："
+            );
+            if (entered) {
+              token = entered;
+              window.localStorage.setItem(TOKEN_KEY, entered);
+              attempt(false);
+              return;
+            }
+          }
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(data);
+          } else {
+            reject(new Error(data.error || ("HTTP " + xhr.status)));
+          }
+        };
+        xhr.onerror = function () { reject(new Error("网络错误，上传失败")); };
+        xhr.send(file);
+      }
+      attempt(true);
+    });
+  }
+
+  function bindUpload(inputId, buttonId, progressId, resultId, endpoint, isApk) {
+    var input = byId(inputId);
+    var button = byId(buttonId);
+    var progress = byId(progressId);
+    var result = byId(resultId);
+    var busy = false;
+
+    button.addEventListener("click", function () {
+      var file = input.files && input.files[0];
+      if (!file) { toast("请先选择文件", true); return; }
+      if (busy) { return; }
+
+      busy = true;
+      button.disabled = true;
+      progress.max = 100;
+      progress.value = 0;
+      result.className = "result";
+      result.textContent = "上传中…";
+
+      uploadFile(endpoint, file, progress, function () {
+        result.textContent = isApk ? "上传完成，正在安装…" : "上传完成，正在保存…";
+      }).then(function (data) {
+        result.className = "result ok";
+        if (isApk) {
+          result.textContent = "安装成功：" + data.filename +
+            "（" + formatSize(data.size) + "）\n" + (data.output || "");
+          toast("APK 安装成功");
+        } else {
+          result.textContent = "上传成功：" + data.filename +
+            "\n" + data.remote_path;
+          toast("壁纸已上传");
+        }
+      }).catch(function (error) {
+        result.className = "result bad";
+        result.textContent = error.message;
+        toast(error.message, true);
+      }).finally(function () {
+        busy = false;
+        button.disabled = false;
+      });
+    });
+  }
+
+  function closeConfigModal() {
+    byId("configModal").hidden = true;
+  }
+
+  function openConfigModal() {
+    var modal = byId("configModal");
+    var pre = byId("configContent");
+    var meta = byId("configMeta");
+    var copy = byId("configCopy");
+
+    configText = "";
+    copy.disabled = true;
+    modal.hidden = false;
+    pre.textContent = "加载中…";
+    meta.textContent = "";
+
+    api("/api/launcher-config").then(function (data) {
+      configText = data.pretty || data.content || "";
+      pre.textContent = configText;
+      meta.textContent = data.path + " · " + formatSize(data.size) +
+        (data.valid ? "" : " · JSON 格式无效");
+      copy.disabled = !configText;
+      if (configText) { copy.focus(); }
+    }).catch(function (error) {
+      pre.textContent = error.message;
+      meta.textContent = "";
+      copy.disabled = true;
+    });
+  }
+
+  function copyConfig() {
+    if (!configText) { return; }
+
+    function fallback() {
+      var area = document.createElement("textarea");
+      area.value = configText;
+      area.setAttribute("readonly", "");
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (error) { ok = false; }
+      document.body.removeChild(area);
+      toast(ok ? "配置已复制" : "复制失败，请手动选择文本", !ok);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(configText).then(function () {
+        toast("配置已复制");
+      }).catch(fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  function bindConfigUpload() {
+    var input = byId("configFile");
+    var button = byId("configUploadButton");
+    var progress = byId("configProgress");
+    var result = byId("configResult");
+    var busy = false;
+
+    button.addEventListener("click", function () {
+      var file = input.files && input.files[0];
+      if (!file) { toast("请先选择 config.json", true); return; }
+      if (busy) { return; }
+      if (!window.confirm(
+        "确定用 " + file.name + " 替换电视上的 config.json 吗？"
+      )) {
+        return;
+      }
+
+      busy = true;
+      button.disabled = true;
+      progress.max = 100;
+      progress.value = 0;
+      result.className = "result";
+      result.textContent = "正在校验并推送…";
+
+      uploadFile("/api/launcher-config", file, progress, function () {
+        result.textContent = "上传完成，正在校验并推送…";
+      }).then(function (data) {
+        result.className = "result ok";
+        result.textContent = "已替换：" + data.path +
+          "（" + formatSize(data.size) + "）";
+        toast("桌面配置已更新");
+        if (!byId("configModal").hidden) {
+          configText = data.pretty || "";
+          byId("configContent").textContent = configText;
+          byId("configMeta").textContent = data.path + " · " +
+            formatSize(data.size);
+          byId("configCopy").disabled = !configText;
+        }
+      }).catch(function (error) {
+        result.className = "result bad";
+        result.textContent = error.message;
+        toast(error.message, true);
+      }).finally(function () {
+        busy = false;
+        button.disabled = false;
+      });
+    });
+  }
+
+  function loadApps() {
+    return api("/api/apps").then(function (data) {
+      var box = byId("apps");
+      box.textContent = "";
+      if (!data.apps || !data.apps.length) {
+        box.textContent = "尚未配置应用（config.json → apps）";
+        return;
+      }
+      data.apps.forEach(function (app) {
+        var button = document.createElement("button");
+        button.className = "key";
+        button.type = "button";
+        button.textContent = app.name || app.package;
+        button.title = app.package;
+        button.addEventListener("click", function () {
+          launch(app.package, app.activity);
+        });
+        box.appendChild(button);
+      });
+    });
+  }
+
+  function renderUserApps(data) {
+    var box = byId("userApps");
+    var meta = byId("userAppsMeta");
+    var apps = data.apps || [];
+    var protectedSet = {};
+    (data.protected || []).forEach(function (pkg) { protectedSet[pkg] = true; });
+
+    box.textContent = "";
+
+    if (!data.loaded) {
+      var empty = document.createElement("div");
+      empty.className = "app-empty";
+      empty.textContent = data.error
+        ? "清单不可用：" + data.error
+        : "尚未获取清单。电视连接成功后会自动获取，也可以点击「刷新清单」。";
+      box.appendChild(empty);
+      meta.textContent = "未加载";
+      return;
+    }
+
+    var metaText = apps.length + " 个应用";
+    if (data.updated_at_iso) {
+      metaText += " · 更新于 " +
+        data.updated_at_iso.replace("T", " ").slice(0, 19);
+    }
+    if (data.error) { metaText += " · 最近一次刷新失败：" + data.error; }
+    meta.textContent = metaText;
+
+    if (!apps.length) {
+      var none = document.createElement("div");
+      none.className = "app-empty";
+      none.textContent = "电视上没有第三方应用。";
+      box.appendChild(none);
+      return;
+    }
+
+    apps.forEach(function (app) {
+      var row = document.createElement("div");
+      row.className = "app-item";
+
+      var info = document.createElement("div");
+      info.className = "info";
+      if (app.name) {
+        var name = document.createElement("div");
+        name.className = "name";
+        name.textContent = app.name;
+        info.appendChild(name);
+      }
+      var pkg = document.createElement("div");
+      pkg.className = "pkg";
+      pkg.textContent = app.package;
+      info.appendChild(pkg);
+      row.appendChild(info);
+
+      if (protectedSet[app.package]) {
+        var tag = document.createElement("button");
+        tag.className = "key";
+        tag.type = "button";
+        tag.textContent = "受保护";
+        tag.disabled = true;
+        tag.title = "桌面守护的关键应用，禁止通过网页卸载";
+        row.appendChild(tag);
+      } else {
+        var del = document.createElement("button");
+        del.className = "key danger";
+        del.type = "button";
+        del.textContent = "卸载";
+        del.addEventListener("click", function () {
+          uninstallUserApp(app);
+        });
+        row.appendChild(del);
+      }
+
+      box.appendChild(row);
+    });
+  }
+
+  function loadUserApps() {
+    return api("/api/user-apps").then(renderUserApps).catch(function (error) {
+      renderUserApps({ loaded: false, apps: [], error: error.message });
+    });
+  }
+
+  function refreshUserApps() {
+    var button = byId("userAppsRefresh");
+    if (button.disabled) { return; }
+
+    button.disabled = true;
+    button.textContent = "刷新中…";
+    api("/api/user-apps/refresh", { method: "POST", body: {} })
+      .then(function (data) {
+        renderUserApps(data);
+        toast("应用清单已刷新");
+      })
+      .catch(function (error) { toast(error.message, true); })
+      .finally(function () {
+        button.disabled = false;
+        button.textContent = "刷新清单";
+      });
+  }
+
+  function uninstallUserApp(app) {
+    var label = app.name
+      ? app.name + "（" + app.package + "）"
+      : app.package;
+    if (!window.confirm(
+      "确定卸载 " + label + " 吗？\n\n" +
+      "应用及其数据将被删除，无法通过刷新恢复。"
+    )) {
+      return;
+    }
+    api("/api/uninstall", { method: "POST", body: { package: app.package } })
+      .then(function (data) {
+        renderUserApps(data);
+        toast("已卸载 " + app.package);
+      })
+      .catch(function (error) { toast(error.message, true); });
+  }
+
+  function setPill(element, text, good) {
+    element.textContent = text;
+    element.classList.toggle("ok", good === true);
+    element.classList.toggle("bad", good === false);
+  }
+
+  function renderWatchdog(status) {
+    watchdogState = status;
+    var available = status.available !== false;
+    var running = !!status.running;
+    var paused = !!status.paused;
+    var text = "不可用";
+    var good = null;
+
+    if (available) {
+      if (paused) {
+        text = "已暂停";
+      } else if (running) {
+        text = "运行中";
+        good = true;
+      } else {
+        text = status.enabled ? "已停止" : "已停止（配置禁用）";
+        good = false;
+      }
+    }
+
+    setPill(byId("watchdogPill"), text, good);
+    byId("watchdogToggle").disabled = !available;
+    byId("watchdogToggle").textContent = running ? "停止" : "启动";
+    byId("watchdogPause").disabled = !available || !running;
+    byId("watchdogPause").textContent = paused ? "恢复" : "暂停";
+
+    if (!available) {
+      byId("watchdogInfo").textContent = "";
+      return;
+    }
+
+    var parts = ["已拉回 " + (status.triggers || 0) + " 次"];
+    if (status.last_trigger_iso) {
+      parts.push("最近 " + status.last_trigger_iso.replace("T", " ").slice(0, 19));
+    }
+    if (status.last_error) {
+      parts.push("错误: " + status.last_error);
+    }
+    byId("watchdogInfo").textContent = parts.join(" · ");
+  }
+
+  function refreshWatchdog() {
+    api("/api/watchdog").then(renderWatchdog).catch(function () {
+      setPill(byId("watchdogPill"), "状态未知", null);
+      byId("watchdogToggle").disabled = true;
+      byId("watchdogPause").disabled = true;
+    });
+  }
+
+  function watchdogAction(action) {
+    api("/api/watchdog", { method: "POST", body: { action: action } })
+      .then(function (status) {
+        renderWatchdog(status);
+        var labels = {
+          start: "守护已启动",
+          stop: "守护已停止",
+          pause: "守护已暂停",
+          resume: "守护已恢复"
+        };
+        toast(labels[action] || "已执行");
+      })
+      .catch(function (error) { toast(error.message, true); });
+  }
+
+  function refreshState() {
+    api("/api/state").then(function (state) {
+      setPill(byId("onlinePill"), state.online ? "在线" : "离线", !!state.online);
+
+      if (state.screen === "on") {
+        setPill(byId("screenPill"), "屏幕开启", true);
+      } else if (state.screen === "off") {
+        setPill(byId("screenPill"), "屏幕关闭", false);
+      } else {
+        setPill(byId("screenPill"), "屏幕未知", null);
+      }
+
+      byId("currentApp").textContent =
+        state.foreground_app_name || state.foreground_package || "未知";
+      byId("currentComponent").textContent =
+        state.foreground_component || "";
+
+      if (state.error && state.error !== lastError) {
+        toast(state.error, true);
+        lastError = state.error;
+      } else if (!state.error) {
+        lastError = "";
+      }
+    }).catch(function (error) {
+      setPill(byId("onlinePill"), "连接失败", false);
+      byId("currentApp").textContent = "—";
+      byId("currentComponent").textContent = "";
+      if (error.message !== lastError) {
+        toast(error.message, true);
+        lastError = error.message;
+      }
+    });
+  }
+
+  byId("deviceInfo").textContent = "服务地址 " + window.location.host;
+  buildNumpad();
+
+  var actionButtons = document.querySelectorAll("[data-action]");
+  for (var i = 0; i < actionButtons.length; i++) {
+    bindPress(actionButtons[i]);
+  }
+
+  byId("watchdogToggle").addEventListener("click", function () {
+    var running = watchdogState && watchdogState.running;
+    watchdogAction(running ? "stop" : "start");
+  });
+  byId("watchdogPause").addEventListener("click", function () {
+    var paused = watchdogState && watchdogState.paused;
+    watchdogAction(paused ? "resume" : "pause");
+  });
+
+  byId("powerButton").addEventListener("click", function () {
+    if (!window.confirm(
+      "切换电视电源（待机/唤醒）？\n待机后电视会断开网络，Web 将无法再控制。"
+    )) {
+      return;
+    }
+    sendKey("power", "已发送电源键");
+  });
+
+  function sendUdpAction(button) {
+    var action = button.getAttribute("data-udp-action");
+    var confirmText = button.getAttribute("data-confirm");
+    if (confirmText && !window.confirm(confirmText)) {
+      return;
+    }
+    var label = button.textContent.trim();
+    sendKey(action, "已发送 " + label);
+  }
+
+  var udpButtons = document.querySelectorAll("[data-udp-action]");
+  for (var j = 0; j < udpButtons.length; j++) {
+    (function (button) {
+      button.addEventListener("click", function () { sendUdpAction(button); });
+    })(udpButtons[j]);
+  }
+
+  bindUpload(
+    "apkFile", "apkUpload", "apkProgress", "apkResult", "/api/apk", true
+  );
+  bindUpload(
+    "wallpaperFile", "wallpaperUpload", "wallpaperProgress",
+    "wallpaperResult", "/api/wallpaper", false
+  );
+  bindConfigUpload();
+
+  byId("configView").addEventListener("click", openConfigModal);
+  byId("configClose").addEventListener("click", closeConfigModal);
+  byId("configClose2").addEventListener("click", closeConfigModal);
+  byId("configCopy").addEventListener("click", copyConfig);
+  byId("configModal").addEventListener("click", function (event) {
+    if (event.target === byId("configModal")) { closeConfigModal(); }
+  });
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape" && !byId("configModal").hidden) {
+      closeConfigModal();
+    }
+  });
+
+  byId("userAppsRefresh").addEventListener("click", refreshUserApps);
+
+  loadApps().catch(function (error) { toast(error.message, true); });
+  loadUserApps();
+  refreshState();
+  refreshWatchdog();
+  setInterval(refreshState, 3000);
+  setInterval(refreshWatchdog, 3000);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,76 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "连接 letv_daemon",
+        "description": "填写运行 letv_daemon 的常开主机地址。Home Assistant 只访问它的 Web API，不直接调用 ADB。",
+        "data": {
+          "host": "主机",
+          "port": "端口",
+          "token": "访问令牌（可选）",
+          "name": "设备名称"
+        }
+      },
+      "reauth_confirm": {
+        "title": "重新验证 letv_daemon",
+        "description": "请输入 {host}:{port} 当前的访问令牌。",
+        "data": {
+          "token": "访问令牌（可选）"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "无法连接 letv_daemon，请检查主机、端口与服务状态。",
+      "invalid_auth": "访问令牌被拒绝。",
+      "invalid_host": "主机不能为空。",
+      "unknown": "发生未知错误，请查看 Home Assistant 日志。"
+    },
+    "abort": {
+      "already_configured": "该 letv_daemon 实例已配置。",
+      "reauth_successful": "重新验证成功。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "letv_daemon 选项",
+        "description": "状态轮询间隔（秒）。守护服务自身约每 5 秒刷新一次缓存。",
+        "data": {
+          "scan_interval": "轮询间隔（秒）"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "current_app": {
+        "name": "当前应用"
+      }
+    },
+    "binary_sensor": {
+      "online": {
+        "name": "在线"
+      }
+    },
+    "switch": {
+      "power": {
+        "name": "电源"
+      }
+    },
+    "remote": {
+      "remote": {
+        "name": "遥控器"
+      }
+    },
+    "button": {
+      "power_off": {
+        "name": "关机"
+      }
+    },
+    "select": {
+      "input_source": {
+        "name": "信号源"
+      }
+    }
+  }
+}

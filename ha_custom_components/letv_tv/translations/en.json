@@ -1,0 +1,45 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to letv_daemon",
+        "description": "Enter the address of the always-on host running letv_daemon. Input sources come from the apps array in its config.json.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "token": "Access token (optional)",
+          "name": "Television name"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate letv_daemon",
+        "description": "Enter the current access token for {host}:{port}.",
+        "data": {
+          "token": "Access token (optional)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach letv_daemon. Check the host, port and service status.",
+      "invalid_auth": "The access token was rejected.",
+      "invalid_host": "Host must not be empty.",
+      "unknown": "Unexpected error. See the Home Assistant log for details."
+    },
+    "abort": {
+      "already_configured": "This letv_daemon instance is already configured.",
+      "invalid_host": "Host must not be empty.",
+      "reauth_successful": "Re-authentication successful."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "letv_tv options",
+        "description": "State and volume polling interval in seconds.",
+        "data": {
+          "scan_interval": "Polling interval (seconds)"
+        }
+      }
+    }
+  }
+}

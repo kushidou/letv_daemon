@@ -1,0 +1,10 @@
+{
+  "domain": "letv_daemon",
+  "name": "LeTV Daemon",
+  "version": "0.2.0",
+  "config_flow": true,
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "dependencies": [],
+  "requirements": []
+}

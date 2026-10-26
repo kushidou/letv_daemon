@@ -1,0 +1,95 @@
+{
+  "device": {
+    "host": "192.168.1.101修改为电视ip，建议固定",
+    "adb_port": 5555,
+    "reconnect_interval": 5,
+    "command_timeout": 10,
+    "poll_interval": 5,
+    "offline_after_sec": 60,
+    "offline_poll_interval": 30,
+    "offline_confirm_polls": 3,
+    "adb_path": "adb",
+    "transport": "subprocess"
+  },
+  "udp": {
+    "enabled": true,
+    "host": "192.168.1.101",
+    "port": 9900,
+    "timeout": 2
+  },
+  "watchdog": {
+    "enabled": true,
+    "target": "com.peter.tvhome.letv/com.gathin.tvhome.MainActivity",
+    "stock_package": "com.stv.deskplatform",
+    "debounce_sec": 1.5,
+    "poll_sec": 5,
+    "pause_file": "PAUSE"
+  },
+  "web": {
+    "host": "0.0.0.0",
+    "port": 8770,
+    "token": ""
+  },
+  "allow_dangerous_actions": true,
+  "apps": [
+    {
+      "package": "com.peter.tvhome.letv",
+      "name": "桌面",
+      "activity": "com.gathin.tvhome.MainActivity"
+    },
+    { "package": "com.gitvvideo.letv", "name": "爱奇艺", "activity": "com.gala.video.app.epg.HomeActivity" },
+    { "package": "com.cibn.tv", "name": "优酷", "activity": "com.youku.tv.home.activity.HomeActivity" },
+    { "package": "com.hunantv.license", "name": "芒果", "activity": "com.mgtv.tv.launcher.ChannelHomeActivity" },
+    { "package": "com.ktcp.tvvideo", "name": "腾讯" },
+    { "package": "com.xiaodianshi.tv.yst", "name": "哔哩哔哩" },
+    { "package": "com.trim.tv", "name": "飞牛影视" }
+  ],
+  "inputs": [
+    {
+      "name": "机顶盒",
+      "action": "app",
+      "package": "com.stv.signalsourcemanager",
+      "activity": "com.stv.signalsourcemanager.MainActivity",
+      "target": "com.stv.signalsourcemanager"
+    },
+    {
+      "name": "桌面",
+      "action": "app",
+      "package": "com.peter.tvhome.letv",
+      "activity": "com.gathin.tvhome.MainActivity",
+      "target": "com.peter.tvhome.letv"
+    },
+    {
+      "name": "爱奇艺",
+      "action": "app",
+      "package": "com.gitvvideo.letv",
+      "activity": "com.gala.video.app.epg.HomeActivity",
+      "target": "com.gitvvideo.letv"
+    },
+    {
+      "name": "优酷",
+      "action": "app",
+      "package": "com.cibn.tv",
+      "activity": "com.youku.tv.home.activity.HomeActivity",
+      "target": "com.cibn.tv"
+    },
+    {
+      "name": "腾讯视频",
+      "action": "app",
+      "package": "com.ktcp.tvvideo",
+      "target": "com.ktcp.tvvideo"
+    },
+    {
+      "name": "哔哩哔哩",
+      "action": "app",
+      "package": "com.xiaodianshi.tv.yst",
+      "target": "com.xiaodianshi.tv.yst"
+    },
+    {
+      "name": "飞牛影视",
+      "action": "app",
+      "package": "com.trim.tv",
+      "target": "com.trim.tv"
+    }
+  ]
+}

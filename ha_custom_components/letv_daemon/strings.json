@@ -1,0 +1,76 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to letv_daemon",
+        "description": "Enter the address of the always-on host running letv_daemon. Home Assistant talks to its Web API and never calls ADB directly.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "token": "Access token (optional)",
+          "name": "Device name"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate letv_daemon",
+        "description": "Enter the current access token for {host}:{port}.",
+        "data": {
+          "token": "Access token (optional)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach letv_daemon. Check the host, port and service status.",
+      "invalid_auth": "The access token was rejected.",
+      "invalid_host": "Host must not be empty.",
+      "unknown": "Unexpected error. See the Home Assistant log for details."
+    },
+    "abort": {
+      "already_configured": "This letv_daemon instance is already configured.",
+      "reauth_successful": "Re-authentication successful."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "letv_daemon options",
+        "description": "State polling interval in seconds. The daemon refreshes its own cache roughly every 5 seconds.",
+        "data": {
+          "scan_interval": "Polling interval (seconds)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "current_app": {
+        "name": "Current app"
+      }
+    },
+    "binary_sensor": {
+      "online": {
+        "name": "Online"
+      }
+    },
+    "switch": {
+      "power": {
+        "name": "Power"
+      }
+    },
+    "remote": {
+      "remote": {
+        "name": "Remote"
+      }
+    },
+    "button": {
+      "power_off": {
+        "name": "Power off"
+      }
+    },
+    "select": {
+      "input_source": {
+        "name": "Input source"
+      }
+    }
+  }
+}

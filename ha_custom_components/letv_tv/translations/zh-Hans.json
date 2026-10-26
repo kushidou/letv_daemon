@@ -1,0 +1,45 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "连接 letv_daemon",
+        "description": "填写运行 letv_daemon 的常开主机地址。输入源来自其 config.json 中的 apps 数组。",
+        "data": {
+          "host": "主机",
+          "port": "端口",
+          "token": "访问令牌（可选）",
+          "name": "电视名称"
+        }
+      },
+      "reauth_confirm": {
+        "title": "重新验证 letv_daemon",
+        "description": "请输入 {host}:{port} 当前的访问令牌。",
+        "data": {
+          "token": "访问令牌（可选）"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "无法连接 letv_daemon，请检查主机、端口与服务状态。",
+      "invalid_auth": "访问令牌被拒绝。",
+      "invalid_host": "主机不能为空。",
+      "unknown": "发生未知错误，请查看 Home Assistant 日志。"
+    },
+    "abort": {
+      "already_configured": "该 letv_daemon 实例已配置。",
+      "invalid_host": "主机不能为空。",
+      "reauth_successful": "重新验证成功。"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "letv_tv 选项",
+        "description": "状态与音量的轮询间隔（秒）。",
+        "data": {
+          "scan_interval": "轮询间隔（秒）"
+        }
+      }
+    }
+  }
+}
